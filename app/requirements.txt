@@ -1,0 +1,6 @@
+Flask==2.3.3
+folium==0.15.1
+pandas==1.5.3
+pycaret==3.0.0rc9
+joblib==1.2.0
+scikit-learn==1.2.0
