@@ -13,8 +13,8 @@ from datetime import datetime
 
 
 app = Flask(__name__)
-model = load_model('./model/park_pycaret_2012_pipeline')
-data = pd.read_csv('./data/street_sensor_longlat.csv')
+model = load_model('app/model/park_pycaret_2012_pipeline')
+data = pd.read_csv('app/data/street_sensor_longlat.csv')
 
 
 @app.route('/', methods= ['POST', 'GET'])
@@ -73,7 +73,7 @@ def predict():
                            icon=folium.Icon( icon='fa-car', prefix='fa',color='green')
                            ).add_to(map)            
 
-        map.save('templates/map.html')
+        map.save('app/templates/map.html')
                 
         return render_template('index.html')
     if request.method == 'GET':
