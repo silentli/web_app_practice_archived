@@ -5,6 +5,7 @@
 
 {% block content %}
     <form method="post">
+    {% csrf_token %}
       <label for="Date">Date</label>
       <input type="text" placeholder="dd/mm/yyyy" name="Date" id="Date">
       <label for="Hour">Hour</label>
@@ -17,4 +18,4 @@
     </form>
 {% endblock %}
 
-{% include 'map.html' %}
+{% include 'predictor/sf_map.html' %}
