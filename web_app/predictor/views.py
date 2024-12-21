@@ -1,67 +1,47 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-from datetime import datetime
-import folium
-from .utils.loaders import load_model_file, load_data_file
-from pycaret.regression import predict_model
-import pandas as pd
+from django.contrib import messages
+from .form import PredictionForm
+from .services.predictor import Predictor
+from .services.data_handler import DataHandler
+from .services.map_visualizer import MapVisualizer
 
-# Load the model and data using the loader module
-model = load_model_file()
-data = load_data_file()
+
+# load the model and data using the loader module
+model_name = 'park_pycaret_2012_pipeline'
+predictor = Predictor(model_name=model_name)
+data_handler = DataHandler()
+map_visualizer = MapVisualizer()
+
 
 def predict(request):
-    sf_map = folium.Map(location=[37.79016837, -122.415677],
-                     tiles='cartodbpositron',
-                     zoom_start=14, width='75%', height='75%')
-
-    sf_map.save('predictor/templates/sf_map.html')
+    map_html = None
 
     if request.method == 'POST':
-        # Retrieve form data
-        date = request.POST.get('Date')
-        hour = request.POST.get('Hour')
-        holiday = request.POST.get('Holiday')
-        rain = request.POST.get('Rain')
+        form = PredictionForm(request.POST)
+        if form.is_valid():
+            try:
+                prediction_input = data_handler.prepare_prediction_data(
+                    date=form.cleaned_data['Date'],
+                    hour=form.cleaned_data['Hour'],
+                    holiday=form.cleaned_data['Holiday'],
+                    rain=form.cleaned_data['Rain']
+                )
 
-        # Check for missing fields
-        if not all([date, hour, holiday, rain]):
-            return HttpResponse("Please fill in all fields correctly!", status=400)
+                predictions = predictor.predict(prediction_input)
+                map_data = data_handler.prepare_map_data(predictions)
 
-        # Prepare data for prediction
-        pre = pd.DataFrame(data['BLOCK_ID'])
-        day = datetime.strptime(date, '%d/%m/%Y').weekday()
-        pre['Dayofweek'] = day
-        pre['Hour'] = int(hour)
-        pre['holiday'] = int(holiday)
-        pre['Precipitation'] = int(rain)
+                map_visualizer.add_markers(map_data)
+                map_html = map_visualizer.render_map()
 
-        if day <= 4:
-            pre['DAY_TYPE'] = 0
+                messages.success(request, 'Prediction completed.')
+            except ValueError as e:
+                messages.error(request, f"Error: {str(e)}")
         else:
-            pre['DAY_TYPE'] = 1
+            messages.error(request, 'Invalid form submission, please try again.')
+    else:
+        form = PredictionForm()
 
-        # Make predictions
-        prediction = predict_model(model, data=pre)
-        prediction = prediction.merge(data, on='BLOCK_ID')
-
-        # Add markers to the sf_map
-        for i in range(len(prediction)):
-            prediction_label = prediction['prediction_label'].iloc[i]
-            color = ('red' if prediction_label > 0.85 else
-                     'orange' if prediction_label > 0.6 else 'green')
-
-            folium.Marker([
-                prediction['lat'].iloc[i],
-                prediction['lng'].iloc[i]
-            ],
-                tooltip=prediction['STREET_BLOCK'].iloc[i],
-                popup=round(prediction_label, 2),
-                icon=folium.Icon(icon='fa-car', prefix='fa', color=color)
-            ).add_to(sf_map)
-
-        # Save the sf_map
-        sf_map.save('predictor/templates/predictor/sf_map.html')
-        return render(request, 'predictor/index.html')
-
-    return render(request, 'predictor/index.html')
+    return render(request, 'predictor/index.html', {
+        'form': form,
+        'map_html': map_html
+    })
