@@ -1,21 +1,28 @@
-
 {% block header %}
   <h1>Find a Parking Spot</h1>
 {% endblock %}
 
 {% block content %}
-    <form method="post">
-    {% csrf_token %}
-      <label for="Date">Date</label>
-      <input type="text" placeholder="dd/mm/yyyy" name="Date" id="Date">
-      <label for="Hour">Hour</label>
-      <input type="text" name="Hour" id="Hour" placeholder="0-23">
-      <label for="Holiday">Holiday</label>
-      <input type="text" name="Holiday" id="Holiday" placeholder="yes:1, no:0">
-      <label for="Rain">Rain</label>
-      <input type="text" name="Rain" id="Rain" placeholder="yes:1, no:0">
-      <input type="submit" value="Kerb it">
-    </form>
-{% endblock %}
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message {{ message.tags }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
-{% include 'predictor/sf_map.html' %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Check">
+    </form>
+
+    {% if map_html %}
+        <h2>Parking Availability Map</h2>
+        <div id="map-container">
+            {{ map_html|safe }}
+        </div>
+    {% endif %}
+{% endblock %}
