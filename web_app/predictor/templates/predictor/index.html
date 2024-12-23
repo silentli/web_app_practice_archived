@@ -13,10 +13,17 @@
       </div>
     {% endif %}
 
-    <form method="post">
+    <form method="post" style="text-align: left;">
         {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Check">
+        <label for="{{ form.Date.id_for_label }}">Date:</label>
+        {{ form.Date }}
+        <label for="{{ form.Hour.id_for_label }}">Hour:</label>
+        {{ form.Hour }}
+        <label for="{{ form.Holiday.id_for_label }}">Holiday:</label>
+        {{ form.Holiday }}
+        <label for="{{ form.Rain.id_for_label }}">Rain:</label>
+        {{ form.Rain }}
+        <button type="submit">Check</button>
     </form>
 
     {% if map_html %}
