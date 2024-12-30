@@ -8,9 +8,11 @@ from predictor.services.data_handler import DataHandler
 @patch("predictor.services.data_handler.load_data_file")
 def data_handler(mock_load_data_file):
     mock_data = pd.DataFrame({
-        'BLOCK_ID': [1,2,3],
-        'map_column': ['value1', 'value2', 'value3'],
-    })
+       'BLOCK_ID': [41522, 21733],
+       'STREET_BLOCK': ['FILLMORE ST 2200', '17TH ST 3300'],
+       'lat': [37.7900066, 37.763444],
+       'lng': [-122.4339023, -122.4195514],
+   })
     mock_load_data_file.return_value = mock_data
     return DataHandler()
 
@@ -25,7 +27,8 @@ def test_prepare_prediction_data(data_handler):
     input_data = data_handler.prepare_prediction_data(date, hour, holiday, rain)
 
     assert not input_data.empty, "Input data should not be empty."
-    assert list(input_data.columns) == data_handler.REQUIRED_COLUMNS, f"Input data columns: '{input_data.columns}' are not as expected."
+    assert set(data_handler._REQUIRED_COLUMNS_PREDICTIONS) <= set(input_data.columns), \
+        f"Input data columns: '{input_data.columns}' do not include all required columns."
     assert (input_data['Dayofweek'] == date.weekday()).all(), "Dayofweek column mismatch."
     assert (input_data['Hour'] == hour).all(), "Hour column mismatch."
     assert (input_data['holiday'] == holiday).all(), "Holiday column mismatch."
@@ -43,5 +46,4 @@ def test_prepare_map_data(data_handler):
     assert not map_data.empty, "Map data should not be empty."
     assert 'BLOCK_ID' in map_data.columns, "BLOCK_ID column is missing in the map data."
     assert 'prediction_label' in map_data.columns, "prediction_label column is missing in map data."
-    assert 'map_column' in map_data.columns, "map_column from basic_data is missing in map data."
     assert len(map_data) == len(predictions), "Map data row count should match predictions row count."

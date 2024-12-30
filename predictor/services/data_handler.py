@@ -1,17 +1,32 @@
 import pandas as pd
 from datetime import datetime
 
-from ..utils.loaders import load_data_file
+from predictor.utils.loaders import load_data_file
+from predictor.exceptions import InternalProcessingError
 
 
 class DataHandler:
     """
     handles predictions input data and map-related data
     """
-    REQUIRED_COLUMNS = ['BLOCK_ID', 'Dayofweek', 'Hour', 'holiday', 'Precipitation', 'DAY_TYPE']
+    _REQUIRED_COLUMNS_BASIC_DATA = ['BLOCK_ID', 'STREET_BLOCK', 'lat', 'lng']
+    _REQUIRED_COLUMNS_PREDICTIONS = ['BLOCK_ID', 'Dayofweek', 'Hour', 'holiday', 'Precipitation', 'DAY_TYPE']
 
     def __init__(self):
         self.basic_data = load_data_file()
+        self._validate_columns(self.basic_data, self._REQUIRED_COLUMNS_BASIC_DATA, "Data file")
+
+
+    def _validate_columns(self, df: pd.DataFrame, required_columns: list, context: str) -> None:
+        """
+        validates that the DataFrame contains the required columns
+        """
+        missing_columns = set(required_columns) - set(df.columns)
+        if missing_columns:
+            raise InternalProcessingError(
+                f"{context} is missing required columns: {', '.join(missing_columns)}"
+            )
+
 
     def prepare_prediction_data(self, date: datetime.date, hour: int, holiday: int, rain: int) -> pd.DataFrame:
         """
@@ -23,22 +38,22 @@ class DataHandler:
         """
         # day_of_week = datetime.strptime(date, '%d/%m/%Y').weekday()
         day_of_week = date.weekday()
-        prediction_input = self.basic_data[['BLOCK_ID']].drop_duplicates()
-        return prediction_input.assign(
+        prediction_input = self.basic_data[['BLOCK_ID']].drop_duplicates().assign(
             Dayofweek=day_of_week,
             Hour=hour,
             holiday=holiday,
             Precipitation=rain,
             DAY_TYPE=0 if day_of_week <= 4 else 1
         )
+        self._validate_columns(prediction_input, self._REQUIRED_COLUMNS_PREDICTIONS, "Prediction input data")
+        return prediction_input
 
     def prepare_map_data(self, predictions: pd.DataFrame) -> pd.DataFrame:
         """
         param:
         predictions: DataFrame containing BLOCK_ID and prediction_label
         """
-        if 'BLOCK_ID' not in predictions.columns or 'prediction_label' not in predictions.columns:
-            raise ValueError("Predictions must include 'BLOCK_ID' and 'prediction_label' columns.")
+        self._validate_columns(predictions, ['BLOCK_ID', 'prediction_label'], "Predictions")
 
         predictions_for_map = predictions[['BLOCK_ID', 'prediction_label']]
         return predictions_for_map.merge(self.basic_data, on='BLOCK_ID', how='left')
