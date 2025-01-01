@@ -1,10 +1,10 @@
-from django.shortcuts import render
 from django.contrib import messages
+from django.shortcuts import render
+
 from .form import PredictionForm
-from .services.predictor import Predictor
 from .services.data_handler import DataHandler
 from .services.map_visualizer import MapVisualizer
-
+from .services.predictor import Predictor
 
 # load the model and data using the loader module
 model_name = 'park_pycaret_2012_pipeline'

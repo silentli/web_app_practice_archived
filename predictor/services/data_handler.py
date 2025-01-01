@@ -1,8 +1,9 @@
-import pandas as pd
 from datetime import datetime
 
-from predictor.utils.loaders import load_data_file
+import pandas as pd
+
 from predictor.exceptions import InternalProcessingError
+from predictor.utils.loaders import load_data_file
 
 
 class DataHandler:

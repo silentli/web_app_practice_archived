@@ -1,7 +1,9 @@
 import os
+
 import pandas as pd
 from django.conf import settings
 from pycaret.regression import load_model
+
 
 def load_prediction_model(model_name='park_pycaret_2012_pipeline'):
     model_path = os.path.join(settings.BASE_DIR, 'predictor', 'model', model_name)

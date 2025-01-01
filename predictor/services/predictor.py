@@ -1,9 +1,10 @@
-import pandas as pd
 from typing import Optional
+
+import pandas as pd
 from pycaret.regression import predict_model
 
+from predictor.exceptions import InternalProcessingError
 from predictor.utils.loaders import load_prediction_model
-from ..exceptions import InternalProcessingError
 
 
 class Predictor:

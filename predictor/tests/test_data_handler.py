@@ -1,8 +1,10 @@
-import pytest
-import pandas as pd
 from unittest.mock import patch
 
+import pandas as pd
+import pytest
+
 from predictor.services.data_handler import DataHandler
+
 
 @pytest.fixture
 @patch("predictor.services.data_handler.load_data_file")
@@ -32,7 +34,7 @@ def test_prepare_prediction_data(data_handler):
     assert (input_data['Dayofweek'] == date.weekday()).all(), "Dayofweek column mismatch."
     assert (input_data['Hour'] == hour).all(), "Hour column mismatch."
     assert (input_data['holiday'] == holiday).all(), "Holiday column mismatch."
-    assert (input_data['DAY_TYPE'] == expected_day_type).all(), f"DAY_TYPE column mismatch."
+    assert (input_data['DAY_TYPE'] == expected_day_type).all(), "DAY_TYPE column mismatch."
 
 
 def test_prepare_map_data(data_handler):

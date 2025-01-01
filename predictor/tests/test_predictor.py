@@ -1,9 +1,11 @@
-import pytest
-import pandas as pd
-
 from unittest.mock import MagicMock
-from predictor.services.predictor import Predictor
+
+import pandas as pd
+import pytest
+
 from predictor.exceptions import InternalProcessingError
+from predictor.services.predictor import Predictor
+
 
 @pytest.fixture
 def mock_loaded_model(monkeypatch):

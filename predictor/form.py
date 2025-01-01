@@ -1,5 +1,6 @@
 from django import forms
 
+
 class PredictionForm(forms.Form):
     Date = forms.DateField(
         widget=forms.TextInput(attrs={'placeholder': 'dd/mm/yyyy'}),

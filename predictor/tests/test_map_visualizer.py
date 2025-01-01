@@ -1,8 +1,9 @@
-import pytest
-import pandas as pd
 import folium
+import pandas as pd
+import pytest
 
 from predictor.services.map_visualizer import MapVisualizer
+
 
 @pytest.fixture
 def mock_predictions():
