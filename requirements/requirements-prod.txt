@@ -137,6 +137,7 @@ numba==0.60.0
     #   pyod
 numpy==1.24.4
     # via
+    #   -r requirements/requirements-base.in
     #   category-encoders
     #   contourpy
     #   folium
